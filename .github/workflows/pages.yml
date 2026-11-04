@@ -1,0 +1,41 @@
+# index.html を GitHub Pages に公開する（GitHub の公式のひな形 static.yml と同じ内容）
+name: Deploy static content to Pages
+
+on:
+  # main に push したときに公開する
+  push:
+    branches: [main]
+
+  # Actions の画面から手で実行することもできる
+  workflow_dispatch:
+
+# GITHUB_TOKEN に、Pages への公開に要る権限を与える
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開は一度に 1 つだけ行う。途中の公開は取り消さない
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # リポジトリの中身をそのまま公開する
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
